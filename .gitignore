@@ -1,5 +1,9 @@
 # 用户图片 (仅本地)
 img/
+*.jpg
+*.jpeg
+*.png
+*.webp
 
 # 临时/调试文件
 test_*.png
