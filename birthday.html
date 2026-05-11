@@ -402,6 +402,25 @@
     position: absolute; top: 0; left: 0;
     width: 100%; height: 100%;
   }
+  .photo-hint {
+    position: absolute; bottom: 20px; left: 50%;
+    transform: translateX(-50%);
+    z-index: 55;
+    background: rgba(0,0,0,0.7);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 24px;
+    padding: 8px 22px;
+    font-family: 'Noto Serif SC', serif;
+    font-size: 13px;
+    color: rgba(255,255,255,0.6);
+    letter-spacing: 0.5px;
+    backdrop-filter: blur(4px);
+    pointer-events: none;
+  }
+  .photo-hint b {
+    color: var(--gold);
+    font-weight: 600;
+  }
   .photo-card {
     position: absolute;
     border-radius: 6px;
@@ -574,6 +593,9 @@
 <div class="photo-overlay" id="photoOverlay">
   <div class="photo-backdrop"></div>
   <div class="photo-stage" id="photoStage"></div>
+  <div class="photo-hint" id="photoHint">
+    <span>📁 将图片放入 <b>img/</b> 文件夹，命名为 <b>1.jpg</b>、<b>2.jpg</b>、<b>3.jpg</b> … 即可替换占位图</span>
+  </div>
 </div>
 <!-- 灯箱 -->
 <div class="lightbox" id="lightbox">
@@ -1034,7 +1056,7 @@ setTimeout(() => spawnConfetti(40), 800);
         color:rgba(255,255,255,0.35);
         user-select:none;
       `;
-      placeholder.textContent = i + 1;
+      placeholder.innerHTML = '<span style="font-size:' + (w < 130 ? 26 : 36) + 'px;opacity:0.35">📷</span><span style="font-size:12px;margin-top:4px;opacity:0.45;letter-spacing:0.5px">图片' + (i + 1) + '</span>';
       card.appendChild(placeholder);
 
       // 点击放大
@@ -1055,7 +1077,6 @@ setTimeout(() => spawnConfetti(40), 800);
         lightbox.classList.add('active');
       });
 
-      card.appendChild(img);
       photoStage.appendChild(card);
     });
   }
@@ -1150,6 +1171,9 @@ setTimeout(() => spawnConfetti(40), 800);
         // 使用真实图片
         imageFiles.length = 0;
         imageFiles.push(...realFiles);
+        // 隐藏提示条
+        const hint = document.getElementById('photoHint');
+        if (hint) hint.style.display = 'none';
       }
       // 否则保留占位图
       buildPhotoWall();
