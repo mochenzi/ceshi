@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎂 生日快乐</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Noto+Serif+SC:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-deep: #0a0a1a;
+    --gold: #f4c542;
+    --gold-light: #ffe08a;
+    --coral: #ff6b6b;
+    --pink: #ff9a9e;
+    --cream: #fff5e6;
+    --spark: #ffdd57;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg-deep);
+    min-height: 100vh;
+    font-family: 'Noto Serif SC', serif;
+    overflow-x: hidden;
+    cursor: default;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  /* ── 星空背景 ── */
+  .stars-canvas {
+    position: fixed; top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none; z-index: 0;
+  }
+
+  /* ── 主容器 ── */
+  .main-container {
+    position: relative; z-index: 10;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    min-height: 100vh; padding: 40px 20px;
+    transition: opacity 1s ease;
+  }
+  .main-container.fade-out {
+    opacity: 0; pointer-events: none;
+  }
+
+  /* ── 标题 ── */
+  .hero-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.5rem, 6vw, 5rem);
+    font-weight: 900;
+    background: linear-gradient(135deg, #f4c542 0%, #ffdd57 25%, #ff9a9e 50%, #f4c542 75%, #ffdd57 100%);
+    background-size: 200% 200%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shimmer 3s ease-in-out infinite;
+    text-align: center;
+    line-height: 1.2;
+    margin-bottom: 8px;
+    filter: drop-shadow(0 0 20px rgba(244,197,66,0.3));
+  }
+
+  .hero-subtitle {
+    font-family: 'Noto Serif SC', serif;
+    font-size: clamp(1rem, 2.5vw, 1.4rem);
+    color: rgba(255,255,255,0.6);
+    letter-spacing: 0.3em;
+    text-align: center;
+    margin-bottom: 40px;
+  }
+
+  @keyframes shimmer {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+
+  /* ── 输入区域 ── */
+  .input-group {
+    display: flex; gap: 12px;
+    flex-wrap: wrap; justify-content: center;
+    margin-bottom: 48px;
+    z-index: 20;
+  }
+
+  .wish-input {
+    background: rgba(255,255,255,0.06);
+    border: 1.5px solid rgba(255,255,255,0.15);
+    border-radius: 50px;
+    padding: 14px 28px;
+    font-family: 'Noto Serif SC', serif;
+    font-size: 1rem;
+    color: #fff;
+    width: 280px;
+    outline: none;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(10px);
+  }
+
+  .wish-input::placeholder { color: rgba(255,255,255,0.3); }
+  .wish-input:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 30px rgba(244,197,66,0.15), inset 0 0 30px rgba(244,197,66,0.03);
+  }
+
+  .wish-btn {
+    background: linear-gradient(135deg, #f4c542 0%, #e6a822 100%);
+    border: none; border-radius: 50px;
+    padding: 14px 36px;
+    font-family: 'Noto Serif SC', serif;
+    font-size: 1rem; font-weight: 700;
+    color: #1a1a2e; cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 24px rgba(244,197,66,0.25);
+  }
+
+  .wish-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 36px rgba(244,197,66,0.4);
+  }
+  .wish-btn:active { transform: scale(0.96); }
+
+  /* ── 愿望展示 ── */
+  .wish-display {
+    position: fixed; top: 50%; left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 5vw, 4rem);
+    font-weight: 900;
+    color: var(--gold-light);
+    text-shadow: 0 0 60px rgba(244,197,66,0.6);
+    z-index: 100; pointer-events: none;
+    text-align: center; line-height: 1.3;
+    transition: transform 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    white-space: nowrap;
+  }
+  .wish-display.show {
+    transform: translate(-50%, -50%) scale(1);
+    animation: wishFloat 3s ease-in-out forwards;
+  }
+  @keyframes wishFloat {
+    0% { opacity: 1; transform: translate(-50%, -50%) scale(0.6); }
+    30% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+    60% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -56%) scale(0.9); }
+  }
+
+  /* ── 蛋糕场景 ── */
+  .cake-scene {
+    position: relative; z-index: 0;
+    width: 260px; height: 300px;
+    margin-bottom: 32px;
+  }
+
+  /* ── 高脚蛋糕托盘 ── */
+  .cake-stand-base {
+    position: absolute; bottom: 6px; left: 50%;
+    transform: translateX(-50%);
+    width: 140px; height: 12px;
+    background: linear-gradient(180deg, #eee8d8 0%, #d8d0b8 100%);
+    border-radius: 50%;
+    box-shadow: 0 3px 16px rgba(0,0,0,0.3);
+  }
+  .cake-stand-stem {
+    position: absolute; bottom: 16px; left: 50%;
+    transform: translateX(-50%);
+    width: 26px; height: 28px;
+    background: linear-gradient(180deg, #e8e0d0 0%, #c8c0a8 60%, #b8b098 100%);
+    border-radius: 8px 8px 6px 6px;
+    box-shadow: inset 0 3px 8px rgba(255,255,255,0.3);
+  }
+  .cake-stand-plate {
+    position: absolute; bottom: 40px; left: 50%;
+    transform: translateX(-50%);
+    width: 230px; height: 18px;
+    background: linear-gradient(180deg, #f5f0e8 0%, #e8e0d0 40%, #c8b898 100%);
+    border-radius: 50%;
+    box-shadow: 0 6px 28px rgba(0,0,0,0.3), inset 0 2px 6px rgba(255,255,255,0.4);
+    z-index: 0;
+  }
+  .cake-stand-plate::after {
+    content: '';
+    position: absolute; top: -3px; left: 8px; right: 8px;
+    height: 6px;
+    background: rgba(255,255,255,0.25);
+    border-radius: 50%;
+  }
+
+  /* 蛋糕层 - 底层 */
+  .cake-layer-bottom {
+    position: absolute; bottom: 56px; left: 50%;
+    transform: translateX(-50%);
+    width: 180px; height: 70px;
+    background: linear-gradient(180deg, #ff9a9e 0%, #ff6b6b 40%, #e55555 100%);
+    border-radius: 12px 12px 4px 4px;
+    box-shadow: inset 0 8px 30px rgba(255,255,255,0.15), 0 8px 30px rgba(255,107,107,0.25);
+  }
+  .cake-layer-bottom::after {
+    content: '';
+    position: absolute; bottom: -4px; left: 8px; right: 8px;
+    height: 8px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.1) 100%);
+    border-radius: 0 0 4px 4px;
+  }
+  /* 奶油裱花 */
+  .frosting-bottom {
+    position: absolute; bottom: 122px; left: 50%;
+    transform: translateX(-50%);
+    width: 190px; height: 14px;
+    background: radial-gradient(ellipse at center, #fff5e6 0%, #ffe0cc 60%, transparent 70%);
+    border-radius: 50%;
+  }
+
+  /* 蛋糕层 - 中层 */
+  .cake-layer-middle {
+    position: absolute; bottom: 130px; left: 50%;
+    transform: translateX(-50%);
+    width: 140px; height: 56px;
+    background: linear-gradient(180deg, #fff5e6 0%, #ffe8d6 40%, #f0d0b0 100%);
+    border-radius: 10px 10px 3px 3px;
+    box-shadow: inset 0 6px 24px rgba(255,255,255,0.3), 0 6px 24px rgba(0,0,0,0.1);
+  }
+
+  .frosting-middle {
+    position: absolute; bottom: 182px; left: 50%;
+    transform: translateX(-50%);
+    width: 150px; height: 12px;
+    background: radial-gradient(ellipse at center, #fff5e6 0%, #ffe0cc 60%, transparent 70%);
+    border-radius: 50%;
+  }
+
+  /* 蛋糕层 - 顶层 */
+  .cake-layer-top {
+    position: absolute; bottom: 188px; left: 50%;
+    transform: translateX(-50%);
+    width: 100px; height: 44px;
+    background: linear-gradient(180deg, #fff5e6 0%, #ffe8d6 40%, #f0d0b0 100%);
+    border-radius: 8px 8px 3px 3px;
+    box-shadow: inset 0 4px 20px rgba(255,255,255,0.35), 0 4px 20px rgba(0,0,0,0.08);
+    z-index: 5;
+  }
+
+  .frosting-top {
+    position: absolute; bottom: 228px; left: 50%;
+    transform: translateX(-50%);
+    width: 108px; height: 10px;
+    background: radial-gradient(ellipse at center, #fff5e6 0%, #ffe0cc 60%, transparent 70%);
+    border-radius: 50%;
+    z-index: 6;
+  }
+
+  /* ── 蜡烛 ── */
+  .candles-back,
+  .candles-front {
+    position: absolute; left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+  }
+  /* 后方蜡烛: 位于中间三根之间的空隙处, z-index 低于蛋糕顶层 */
+  .candles-back  { bottom: 224px; z-index: 3; gap: 18px; }
+  /* 前方蜡烛: 完整露出, z-index 高于奶油层 */
+  .candles-front { bottom: 230px; z-index: 7; gap: 18px; }
+  .candle {
+    width: 8px; height: 34px;
+    background: linear-gradient(180deg, #ffdd57 0%, #f4c542 40%, #e6a822 100%);
+    border-radius: 4px 4px 2px 2px;
+    position: relative;
+    animation: candleFloat 2s ease-in-out infinite;
+  }
+  .candles-back  .candle:nth-child(1) { animation-delay: 0s; }
+  .candles-back  .candle:nth-child(2) { animation-delay: 0.45s; }
+  .candles-front .candle:nth-child(1) { animation-delay: 0.3s; }
+  .candles-front .candle:nth-child(2) { animation-delay: 0.6s; }
+  .candles-front .candle:nth-child(3) { animation-delay: 0.15s; }
+
+  @keyframes candleFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-3px); }
+  }
+
+  .flame {
+    position: absolute; top: -18px; left: 50%;
+    transform: translateX(-50%);
+    width: 14px; height: 22px;
+    background: radial-gradient(ellipse at 50% 80%, #fff 0%, #ffdd57 20%, #ff9a3c 50%, transparent 70%);
+    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+    animation: flicker 0.15s ease-in-out infinite alternate;
+  }
+  .flame::after {
+    content: '';
+    position: absolute; top: 2px; left: 50%;
+    transform: translateX(-50%);
+    width: 6px; height: 10px;
+    background: radial-gradient(ellipse at 50% 80%, #fff 0%, transparent 70%);
+    border-radius: 50%;
+  }
+
+  @keyframes flicker {
+    0% { transform: translateX(-50%) scale(1, 1) rotate(-2deg); }
+    25% { transform: translateX(-48%) scale(1.05, 0.9) rotate(1deg); }
+    50% { transform: translateX(-52%) scale(0.95, 1.05) rotate(-1deg); }
+    75% { transform: translateX(-49%) scale(1.02, 0.95) rotate(2deg); }
+    100% { transform: translateX(-50%) scale(1, 1) rotate(0deg); }
+  }
+
+  /* ── 糖粒装饰 ── */
+  .sprinkle {
+    position: absolute;
+    width: 5px; height: 3px;
+    border-radius: 2px;
+    opacity: 0.8;
+  }
+
+  /* ── 气球 ── */
+  .balloon {
+    position: fixed;
+    bottom: -160px;
+    z-index: 5;
+    animation: balloonRise linear infinite;
+    pointer-events: none;
+  }
+  .balloon-body {
+    width: 60px; height: 75px;
+    border-radius: 50% 50% 50% 50% / 45% 45% 55% 55%;
+    position: relative;
+    box-shadow: inset -8px -8px 20px rgba(0,0,0,0.15), inset 4px 4px 15px rgba(255,255,255,0.3);
+  }
+  .balloon-body::after {
+    content: '';
+    position: absolute; top: 8px; left: 12px;
+    width: 18px; height: 12px;
+    background: rgba(255,255,255,0.3);
+    border-radius: 50%;
+    transform: rotate(-20deg);
+  }
+  .balloon-knot {
+    width: 10px; height: 10px;
+    margin: -4px auto 0;
+    border-radius: 50%;
+    background: inherit;
+  }
+  .balloon-string {
+    width: 1.5px; height: 55px;
+    margin: 0 auto;
+    background: rgba(255,255,255,0.4);
+    border-radius: 1px;
+    animation: stringWave 1.5s ease-in-out infinite;
+    transform-origin: top;
+  }
+  @keyframes stringWave {
+    0%, 100% { transform: rotate(-3deg); }
+    50% { transform: rotate(3deg); }
+  }
+
+  @keyframes balloonRise {
+    0% { transform: translateY(0) translateX(0) rotate(0deg); }
+    25% { transform: translateY(-25vh) translateX(12px) rotate(2deg); }
+    50% { transform: translateY(-50vh) translateX(-8px) rotate(-1deg); }
+    75% { transform: translateY(-75vh) translateX(14px) rotate(3deg); }
+    100% { transform: translateY(-110vh) translateX(-4px) rotate(0deg); }
+  }
+
+  /* ── 烟花画布 ── */
+  .fireworks-canvas {
+    position: fixed; top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none; z-index: 1;
+  }
+
+  /* ── 彩带/撒花粒子 ── */
+  .confetti-piece {
+    position: fixed;
+    width: 10px; height: 10px;
+    z-index: 8; pointer-events: none;
+    animation: confettiFall linear forwards;
+  }
+  @keyframes confettiFall {
+    0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+  }
+
+  /* ── 照片墙 ── */
+  .photo-overlay {
+    position: fixed; top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 50; pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.8s ease;
+  }
+  .photo-overlay.active {
+    opacity: 1; pointer-events: all;
+  }
+  .photo-backdrop {
+    position: absolute; top: 0; left: 0;
+    width: 100%; height: 100%;
+    /* 透明 — 保留星空背景 */
+  }
+  .photo-stage {
+    position: absolute; top: 0; left: 0;
+    width: 100%; height: 100%;
+  }
+  .photo-card {
+    position: absolute;
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    background: #1a1a2e;
+    transform: scale(0) rotate(0deg);
+    transition: transform 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+                box-shadow 0.4s ease;
+    opacity: 0;
+    cursor: pointer;
+  }
+  .photo-card.show {
+    transform: scale(1) rotate(var(--rot));
+    opacity: 1;
+    animation: photoFloat var(--float-dur) ease-in-out infinite;
+    animation-delay: var(--float-delay);
+  }
+  .photo-card:hover {
+    transform: scale(1.06) rotate(0deg) !important;
+    box-shadow: 0 16px 48px rgba(244,197,66,0.3);
+    z-index: 59;
+  }
+  .photo-card img {
+    display: block;
+    width: 100%; height: 100%;
+    object-fit: cover;
+  }
+  @keyframes photoFloat {
+    0%, 100% { translate: 0 0; }
+    25%  { translate: var(--fx1) var(--fy1); }
+    50%  { translate: var(--fx2) var(--fy2); }
+    75%  { translate: var(--fx3) var(--fy3); }
+  }
+  /* 不同尺寸 */
+  .photo-card.size-lg { width: 160px; height: 200px; }
+  .photo-card.size-md { width: 130px; height: 160px; }
+  .photo-card.size-sm { width: 105px; height: 125px; }
+  .photo-card.size-xl { width: 185px; height: 140px; }
+  .photo-card.size-wide { width: 170px; height: 115px; }
+  .photo-card.size-tall { width: 110px; height: 190px; }
+
+  /* 灯箱 */
+  .lightbox {
+    position: fixed; top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 200; pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.35s ease;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .lightbox.active {
+    opacity: 1; pointer-events: all;
+  }
+  .lightbox-backdrop {
+    position: absolute; top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.88);
+  }
+  .lightbox-img {
+    position: relative; z-index: 1;
+    max-width: 88vw; max-height: 85vh;
+    object-fit: contain;
+    border-radius: 8px;
+    box-shadow: 0 12px 60px rgba(0,0,0,0.7);
+    transform: scale(0.7);
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+  .lightbox.active .lightbox-img {
+    transform: scale(1);
+  }
+
+  /* 关闭按钮 */
+  .photo-close {
+    position: fixed; top: 24px; right: 32px;
+    z-index: 210;
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(255,255,255,0.3);
+    background: rgba(0,0,0,0.4);
+    color: #fff;
+    font-size: 20px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; transform: scale(0);
+    transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    backdrop-filter: blur(4px);
+  }
+  .photo-close.show {
+    opacity: 1; transform: scale(1);
+  }
+  .photo-close:hover {
+    background: rgba(255,107,107,0.6);
+    border-color: rgba(255,255,255,0.6);
+  }
+
+  @media (max-width: 640px) {
+    .photo-card.size-lg { width: 100px; height: 130px; }
+    .photo-card.size-md { width: 82px;  height: 105px; }
+    .photo-card.size-sm { width: 68px;  height: 82px; }
+    .photo-card.size-xl { width: 110px; height: 85px; }
+    .photo-card.size-wide { width: 105px; height: 72px; }
+    .photo-card.size-tall { width: 70px;  height: 120px; }
+  }
+  .footer-note {
+    position: relative; z-index: 10;
+    font-family: 'Noto Serif SC', serif;
+    font-size: 0.85rem;
+    color: rgba(255,255,255,0.3);
+    letter-spacing: 0.15em;
+    text-align: center;
+  }
+
+  /* ── 响应式 ── */
+  @media (max-width: 480px) {
+    .cake-scene { transform: scale(0.75); }
+    .wish-input { width: 200px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- 星空背景 -->
+<canvas class="stars-canvas" id="starsCanvas"></canvas>
+
+<!-- 烟花画布 -->
+<canvas class="fireworks-canvas" id="fireworksCanvas"></canvas>
+
+<!-- 主内容 -->
+<div class="main-container">
+  <h1 class="hero-title">Happy Birthday</h1>
+  <p class="hero-subtitle">生 日 快 乐</p>
+
+  <!-- 蛋糕场景 -->
+  <div class="cake-scene">
+    <!-- 后层蜡烛(两侧, 被奶油部分遮挡) -->
+    <div class="candles-back">
+      <div class="candle"><div class="flame"></div></div>
+      <div class="candle"><div class="flame"></div></div>
+    </div>
+    <!-- 前层蜡烛(中间三根, 在奶油前方) -->
+    <div class="candles-front">
+      <div class="candle"><div class="flame"></div></div>
+      <div class="candle"><div class="flame"></div></div>
+      <div class="candle"><div class="flame"></div></div>
+    </div>
+    <div class="frosting-top"></div>
+    <div class="cake-layer-top"></div>
+    <div class="frosting-middle"></div>
+    <div class="cake-layer-middle"></div>
+    <div class="frosting-bottom"></div>
+    <div class="cake-layer-bottom"></div>
+    <div class="cake-stand-plate"></div>
+    <div class="cake-stand-stem"></div>
+    <div class="cake-stand-base"></div>
+  </div>
+
+  <!-- 输入区 -->
+  <div class="input-group">
+    <input type="text" class="wish-input" id="wishInput" placeholder="输入名字或祝福语..." maxlength="30">
+    <button class="wish-btn" id="wishBtn">✨ 送上祝福</button>
+  </div>
+
+  <p class="footer-note">愿所有的美好都如期而至</p>
+</div>
+
+<!-- 愿望展示层 -->
+<div class="wish-display" id="wishDisplay"></div>
+
+<!-- 照片墙 -->
+<div class="photo-overlay" id="photoOverlay">
+  <div class="photo-backdrop"></div>
+  <div class="photo-stage" id="photoStage"></div>
+</div>
+<!-- 灯箱 -->
+<div class="lightbox" id="lightbox">
+  <div class="lightbox-backdrop"></div>
+  <img class="lightbox-img" id="lightboxImg" src="" alt="">
+</div>
+<button class="photo-close" id="photoClose" title="关闭">✕</button>
+
+<script>
+// ═══════════════ 星空背景 ═══════════════
+(function() {
+  const canvas = document.getElementById('starsCanvas');
+  const ctx = canvas.getContext('2d');
+  let stars = [];
+
+  function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    initStars();
+  }
+
+  function initStars() {
+    stars = [];
+    const count = Math.floor(canvas.width * canvas.height / 1800);
+    for (let i = 0; i < count; i++) {
+      const type = Math.random();
+      // type 0: 稳定微闪  type 1: 随机闪烁  type 2: 忽明忽暗  type 3: 缓慢呼吸
+      const angle = Math.random() * Math.PI * 2;
+      const driftSpeed = 0.01 + Math.random() * 0.06;
+      stars.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        r: Math.random() * 1.8 + 0.3,
+        type,
+        phase: Math.random() * Math.PI * 2,
+        speed: 0.003 + Math.random() * 0.04,
+        baseAlpha: 0.2 + Math.random() * 0.7,
+        // 缓慢漂移速度 (像素/帧)
+        vx: Math.cos(angle) * driftSpeed,
+        vy: Math.sin(angle) * driftSpeed,
+        // 每颗星独立的闪烁触发
+        flashTimer: Math.random() * 200,
+        flashInterval: 80 + Math.random() * 300,
+        flashStrength: 0,
+        flashTarget: 0,
+      });
+    }
+  }
+
+  function drawStars() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    for (const s of stars) {
+      s.phase += s.speed;
+
+      // 缓慢漂移，超出边界则回绕
+      s.x += s.vx;
+      s.y += s.vy;
+      if (s.x < -10) s.x = canvas.width + 10;
+      if (s.x > canvas.width + 10) s.x = -10;
+      if (s.y < -10) s.y = canvas.height + 10;
+      if (s.y > canvas.height + 10) s.y = -10;
+
+      let alpha;
+      switch (s.type) {
+        case 1: // 随机闪烁 - 偶尔突然亮起
+          s.flashTimer++;
+          if (s.flashTimer >= s.flashInterval) {
+            s.flashTimer = 0;
+            s.flashInterval = 60 + Math.random() * 350;
+            s.flashTarget = Math.random() < 0.3 ? 1 : s.baseAlpha;
+          }
+          s.flashStrength += (s.flashTarget - s.flashStrength) * 0.08;
+          alpha = s.flashStrength;
+          break;
+        case 2: // 忽明忽暗 - 用不规则波形
+          alpha = s.baseAlpha * (0.4 + 0.6 * (
+            Math.sin(s.phase) * 0.6 +
+            Math.sin(s.phase * 2.7 + 1.2) * 0.25 +
+            Math.sin(s.phase * 5.1 + 0.8) * 0.15
+          ));
+          break;
+        case 3: // 缓慢呼吸
+          alpha = s.baseAlpha * (0.5 + 0.5 * Math.sin(s.phase * 0.7));
+          break;
+        default: // 稳定微闪
+          alpha = s.baseAlpha + Math.sin(s.phase) * 0.15;
+      }
+
+      alpha = Math.max(0.05, Math.min(1, alpha));
+
+      // 画星点
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255,255,255,${alpha})`;
+      ctx.fill();
+
+      // 亮星加辉光和十字芒
+      if (s.r > 1.1 && alpha > 0.65) {
+        const glowAlpha = alpha * 0.08;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.r * 3, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255,255,220,${glowAlpha})`;
+        ctx.fill();
+
+        // 十字星芒
+        if (alpha > 0.8) {
+          const spikeLen = s.r * 4;
+          const spikeAlpha = alpha * 0.25;
+          ctx.strokeStyle = `rgba(255,255,240,${spikeAlpha})`;
+          ctx.lineWidth = 0.5;
+          ctx.beginPath();
+          ctx.moveTo(s.x - spikeLen, s.y);
+          ctx.lineTo(s.x + spikeLen, s.y);
+          ctx.moveTo(s.x, s.y - spikeLen);
+          ctx.lineTo(s.x, s.y + spikeLen);
+          ctx.stroke();
+        }
+      }
+    }
+
+    requestAnimationFrame(drawStars);
+  }
+
+  window.addEventListener('resize', resize);
+  resize();
+  requestAnimationFrame(drawStars);
+})();
+
+// ═══════════════ 烟花 ═══════════════
+(function() {
+  const canvas = document.getElementById('fireworksCanvas');
+  const ctx = canvas.getContext('2d');
+
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  window.addEventListener('resize', () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  });
+
+  const particles = [];
+
+  function randomColor() {
+    const colors = [
+      { r: 244, g: 197, b: 66 },  // gold
+      { r: 255, g: 107, b: 107 }, // coral
+      { r: 255, g: 154, b: 158 }, // pink
+      { r: 255, g: 221, b: 87 },  // spark
+      { r: 255, g: 140, b: 180 }, // hot pink
+      { r: 130, g: 220, b: 255 }, // sky blue
+      { r: 180, g: 255, b: 200 }, // mint
+      { r: 255, g: 200, b: 130 }, // peach
+    ];
+    return colors[Math.floor(Math.random() * colors.length)];
+  }
+
+  function explode(x, y) {
+    const color = randomColor();
+    const count = 40 + Math.floor(Math.random() * 30);
+    for (let i = 0; i < count; i++) {
+      const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.3;
+      const speed = 2 + Math.random() * 5;
+      particles.push({
+        x, y,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        life: 1,
+        decay: 0.008 + Math.random() * 0.018,
+        color,
+        size: 1.5 + Math.random() * 2.5,
+      });
+    }
+  }
+
+  function spawnFirework() {
+    const x = Math.random() * canvas.width * 0.8 + canvas.width * 0.1;
+    const y = Math.random() * canvas.height * 0.5 + canvas.height * 0.05;
+    explode(x, y);
+  }
+
+  // 初始烟花
+  setTimeout(() => spawnFirework(), 500);
+  setTimeout(() => spawnFirework(), 1200);
+  setTimeout(() => spawnFirework(), 2000);
+
+  // 定期放烟花
+  let fwInterval = setInterval(() => {
+    if (Math.random() < 0.65) spawnFirework();
+  }, 3000);
+
+  let fwRunning = true;
+  function animate() {
+    if (!fwRunning) { ctx.clearRect(0, 0, canvas.width, canvas.height); return; }
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    for (let i = particles.length - 1; i >= 0; i--) {
+      const p = particles[i];
+      p.x += p.vx;
+      p.y += p.vy;
+      p.vy += 0.03; // 重力
+      p.life -= p.decay;
+      p.vx *= 0.995;
+      p.vy *= 0.995;
+
+      if (p.life <= 0) { particles.splice(i, 1); continue; }
+
+      // 拖尾效果
+      ctx.beginPath();
+      ctx.moveTo(p.x, p.y);
+      ctx.lineTo(p.x - p.vx * 1.5, p.y - p.vy * 1.5);
+      ctx.strokeStyle = `rgba(${p.color.r},${p.color.g},${p.color.b},${p.life * 0.5})`;
+      ctx.lineWidth = p.size * 0.6;
+      ctx.stroke();
+
+      // 主粒子
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${p.color.r},${p.color.g},${p.color.b},${p.life})`;
+      ctx.fill();
+
+      // 辉光
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size * 2.5, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${p.color.r},${p.color.g},${p.color.b},${p.life * 0.12})`;
+      ctx.fill();
+    }
+
+    requestAnimationFrame(animate);
+  }
+  animate();
+
+  // 点击放烟花
+  document.addEventListener('click', (e) => {
+    explode(e.clientX, e.clientY);
+  });
+
+  // 暴露给外部调用
+  window.__explode = explode;
+  window.__stopFireworks = function() {
+    fwRunning = false;
+    clearInterval(fwInterval);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles.length = 0;
+  };
+  window.__startFireworks = function() {
+    if (fwRunning) return;
+    fwRunning = true;
+    animate();
+    fwInterval = setInterval(() => {
+      if (Math.random() < 0.65) spawnFirework();
+    }, 3000);
+  };
+})();
+
+// ═══════════════ 气球 ═══════════════
+(function() {
+  const balloonColors = [
+    '#ff6b6b', '#ff9a9e', '#f4c542', '#ffdd57',
+    '#ff8cc8', '#7ec8e3', '#a0e7e5', '#ffb347',
+  ];
+
+  function createBalloon() {
+    const balloon = document.createElement('div');
+    balloon.className = 'balloon';
+    const color = balloonColors[Math.floor(Math.random() * balloonColors.length)];
+
+    balloon.innerHTML = `
+      <div class="balloon-body" style="background:radial-gradient(circle at 35% 30%, ${color} 0%, ${color}dd 60%, ${color}88 100%)"></div>
+      <div class="balloon-knot" style="background:${color}dd"></div>
+      <div class="balloon-string"></div>
+    `;
+
+    balloon.style.left = Math.random() * 90 + '%';
+    balloon.style.animationDuration = (8 + Math.random() * 12) + 's';
+    balloon.style.animationDelay = '0s';
+    balloon.style.transform = `scale(${0.6 + Math.random() * 0.8})`;
+
+    document.body.appendChild(balloon);
+
+    // 自动清理
+    const duration = parseFloat(balloon.style.animationDuration) * 1000;
+    setTimeout(() => balloon.remove(), duration + 500);
+  }
+
+  // 初始气球群
+  for (let i = 0; i < 8; i++) {
+    setTimeout(() => createBalloon(), i * 400);
+  }
+
+  // 持续生成
+  let balloonInterval = setInterval(() => {
+    if (document.querySelectorAll('.balloon').length < 10) {
+      createBalloon();
+    }
+  }, 2500);
+
+  window.__stopBalloons = function() {
+    clearInterval(balloonInterval);
+    document.querySelectorAll('.balloon').forEach(b => {
+      b.style.transition = 'opacity 0.8s ease';
+      b.style.opacity = '0';
+      setTimeout(() => b.remove(), 800);
+    });
+  };
+  window.__startBalloons = function() {
+    balloonInterval = setInterval(() => {
+      if (document.querySelectorAll('.balloon').length < 10) {
+        createBalloon();
+      }
+    }, 2500);
+    for (let i = 0; i < 5; i++) {
+      setTimeout(() => createBalloon(), i * 300);
+    }
+  };
+})();
+
+// ═══════════════ 糖粒装饰 ═══════════════
+(function() {
+  const scene = document.querySelector('.cake-scene');
+  const sprinkleColors = ['#ffdd57','#ff6b6b','#7ec8e3','#a0e7e5','#ff8cc8','#fff'];
+
+  // 定义三层蛋糕的表面区域 { leftMin, leftMax, bottomMin, bottomMax }
+  const zones = [
+    { lMin: 45,  lMax: 215, bMin: 61, bMax: 132 }, // 底层蛋糕 + 奶油
+    { lMin: 65,  lMax: 195, bMin:134, bMax: 188 }, // 中层蛋糕 + 奶油
+    { lMin: 85,  lMax: 175, bMin:192, bMax: 234 }, // 顶层蛋糕 + 奶油
+  ];
+
+  zones.forEach(zone => {
+    for (let i = 0; i < 10; i++) {
+      const s = document.createElement('div');
+      s.className = 'sprinkle';
+      s.style.cssText = `
+        background:${sprinkleColors[Math.floor(Math.random()*sprinkleColors.length)]};
+        left:${zone.lMin + Math.random() * (zone.lMax - zone.lMin)}px;
+        bottom:${zone.bMin + Math.random() * (zone.bMax - zone.bMin)}px;
+        transform:rotate(${Math.random()*360}deg);
+        width:${3 + Math.random()*8}px;
+        height:${2 + Math.random()*4}px;
+        border-radius:${Math.random()>0.5 ? '50%' : '2px'};
+        z-index:8;
+      `;
+      scene.appendChild(s);
+    }
+  });
+})();
+
+// ═══════════════ 撒花 ═══════════════
+function spawnConfetti(count = 60) {
+  const colors = ['#ff6b6b','#f4c542','#ff9a9e','#ffdd57','#7ec8e3','#ff8cc8','#a0e7e5','#ffb347'];
+  for (let i = 0; i < count; i++) {
+    const piece = document.createElement('div');
+    piece.className = 'confetti-piece';
+    const shapes = ['50%', '2px', '0%'];
+    piece.style.cssText = `
+      left:${Math.random() * 100}%;
+      top:${-5 - Math.random() * 15}%;
+      width:${6 + Math.random() * 12}px;
+      height:${6 + Math.random() * 12}px;
+      background:${colors[Math.floor(Math.random() * colors.length)]};
+      border-radius:${shapes[Math.floor(Math.random() * shapes.length)]};
+      animation-duration:${2.5 + Math.random() * 4}s;
+      animation-delay:${Math.random() * 1.5}s;
+    `;
+    document.body.appendChild(piece);
+    setTimeout(() => piece.remove(), 6000);
+  }
+}
+
+// 初始撒花
+setTimeout(() => spawnConfetti(40), 800);
+
+// ═══════════════ 照片墙 ═══════════════
+(function() {
+  const photoStage = document.getElementById('photoStage');
+  const photoOverlay = document.getElementById('photoOverlay');
+  const photoClose = document.getElementById('photoClose');
+  const lightbox = document.getElementById('lightbox');
+  const lightboxImg = document.getElementById('lightboxImg');
+  const mainContainer = document.querySelector('.main-container');
+  const extensions = ['jpg', 'png', 'jpeg', 'webp'];
+
+  const imageFiles = [];
+  let idx = 1;
+  const maxCheck = 50;
+
+  function detectNext() {
+    return new Promise(resolve => {
+      if (idx > maxCheck) { resolve(); return; }
+      let extIdx = 0;
+      function tryExt() {
+        if (extIdx >= extensions.length) { idx++; resolve(detectNext()); return; }
+        const ext = extensions[extIdx];
+        const url = `img/${idx}.${ext}`;
+        const img = new Image();
+        img.onload = () => {
+          imageFiles.push({ url, width: img.naturalWidth, height: img.naturalHeight });
+          idx++;
+          resolve(detectNext());
+        };
+        img.onerror = () => { extIdx++; tryExt(); };
+        img.src = url;
+      }
+      tryExt();
+    });
+  }
+
+  const sizeClasses = ['size-sm', 'size-md', 'size-lg', 'size-xl', 'size-wide', 'size-tall'];
+  const rotations = [-6, -4, -2, 0, 1, 3, 5, 7];
+
+  // 卡片尺寸映射 (用于碰撞检测)
+  const sizeMap = {
+    'size-lg':   [160, 200],
+    'size-md':   [130, 160],
+    'size-sm':   [105, 125],
+    'size-xl':   [185, 140],
+    'size-wide': [170, 115],
+    'size-tall': [110, 190],
+  };
+
+  function buildPhotoWall() {
+    photoStage.innerHTML = '';
+
+    // 生成打乱的格子列表 (全卡片共享, 每格一张, 绝不重叠)
+    const cols = 4, rows = 3;
+    const cellW = window.innerWidth / cols;
+    const cellH = window.innerHeight / rows;
+    const cellList = [];
+    for (let c = 0; c < cols * rows; c++) cellList.push(c);
+    for (let c = cellList.length - 1; c > 0; c--) {
+      const j = Math.floor(Math.random() * (c + 1));
+      [cellList[c], cellList[j]] = [cellList[j], cellList[c]];
+    }
+
+    imageFiles.forEach((file, i) => {
+      const sizeClass = sizeClasses[i % sizeClasses.length];
+      const [w, h] = sizeMap[sizeClass];
+      const card = document.createElement('div');
+      card.className = 'photo-card ' + sizeClass;
+      card.style.setProperty('--rot', rotations[i % rotations.length] + 'deg');
+      card.style.transitionDelay = (i * 0.08) + 's';
+
+      // 随机浮动参数
+      const fd = 3 + Math.random() * 4;
+      card.style.setProperty('--float-dur', fd + 's');
+      card.style.setProperty('--float-delay', (Math.random() * -fd).toFixed(2) + 's');
+      const f = () => (Math.random() * 8 - 4).toFixed(1) + 'px';
+      card.style.setProperty('--fx1', f()); card.style.setProperty('--fy1', f());
+      card.style.setProperty('--fx2', f()); card.style.setProperty('--fy2', f());
+      card.style.setProperty('--fx3', f()); card.style.setProperty('--fy3', f());
+
+      // 网格布局: 每卡一格, 格内随机偏移
+      const ci = cellList[i % cellList.length];
+      const col = ci % cols, row = Math.floor(ci / cols);
+      const margin = 6;
+      const roomX = Math.max(0, cellW - w - margin * 2);
+      const roomY = Math.max(0, cellH - h - margin * 2);
+      const left = col * cellW + margin + Math.random() * roomX;
+      const top  = row * cellH + margin + Math.random() * roomY;
+
+      card.style.left = left + 'px';
+      card.style.top  = top + 'px';
+
+      const img = document.createElement('img');
+      img.src = file.url;
+      img.alt = '';
+      img.loading = 'lazy';
+
+      // 点击放大
+      card.addEventListener('click', (e) => {
+        e.stopPropagation();
+        lightboxImg.src = file.url;
+        lightbox.classList.add('active');
+      });
+
+      card.appendChild(img);
+      photoStage.appendChild(card);
+    });
+  }
+
+  function showPhotoWall() {
+    if (imageFiles.length === 0) return;
+
+    // 停止烟花和气球
+    if (window.__stopFireworks) window.__stopFireworks();
+    if (window.__stopBalloons) window.__stopBalloons();
+
+    // 主内容渐隐
+    mainContainer.classList.add('fade-out');
+
+    // 等渐隐完成后显示照片墙
+    setTimeout(() => {
+      photoOverlay.classList.add('active');
+      photoClose.classList.add('show');
+
+      requestAnimationFrame(() => {
+        photoStage.querySelectorAll('.photo-card').forEach(card => {
+          card.classList.add('show');
+        });
+      });
+    }, 800);
+  }
+
+  function hidePhotoWall() {
+    photoOverlay.classList.remove('active');
+    photoClose.classList.remove('show');
+    photoStage.querySelectorAll('.photo-card').forEach(c => c.classList.remove('show'));
+
+    // 主内容恢复 + 重启烟花气球
+    setTimeout(() => {
+      mainContainer.classList.remove('fade-out');
+      if (window.__startFireworks) window.__startFireworks();
+      if (window.__startBalloons) window.__startBalloons();
+    }, 400);
+  }
+
+  // 灯箱关闭
+  lightbox.addEventListener('click', () => {
+    lightbox.classList.remove('active');
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') lightbox.classList.remove('active');
+  });
+
+  photoClose.addEventListener('click', hidePhotoWall);
+
+  // 窗口尺寸变化时重建位置
+  let resizeTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      if (imageFiles.length > 0) buildPhotoWall();
+      // 如果正在展示, 更新已展示的卡片位置
+      if (photoOverlay.classList.contains('active')) {
+        photoStage.querySelectorAll('.photo-card').forEach(c => c.classList.add('show'));
+      }
+    }, 500);
+  });
+
+  // 预加载 + 构建
+  detectNext().then(() => {
+    buildPhotoWall();
+  });
+
+  window.__showPhotoWall = showPhotoWall;
+  window.__hidePhotoWall = hidePhotoWall;
+})();
+
+// ═══════════════ 祝福按钮 ═══════════════
+const wishInput = document.getElementById('wishInput');
+const wishBtn = document.getElementById('wishBtn');
+const wishDisplay = document.getElementById('wishDisplay');
+
+function showWish() {
+  const text = wishInput.value.trim() || '生日快乐';
+  wishDisplay.textContent = '🎂 ' + text + ' 🎂';
+  wishDisplay.classList.remove('show');
+  void wishDisplay.offsetWidth;
+  wishDisplay.classList.add('show');
+
+  // 触发庆祝效果
+  spawnConfetti(80);
+  for (let i = 0; i < 3; i++) {
+    setTimeout(() => {
+      if (window.__explode) window.__explode(
+        Math.random() * window.innerWidth,
+        Math.random() * window.innerHeight * 0.5
+      );
+    }, i * 200);
+  }
+
+  // 2秒后切换到照片墙
+  setTimeout(() => {
+    if (window.__showPhotoWall) window.__showPhotoWall();
+  }, 2200);
+}
+
+wishBtn.addEventListener('click', showWish);
+wishInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') showWish();
+});
+
+// 暴露烟花函数给全局
+window.__explode = window.__explode || function(x, y) {};
+</script>
+
+</body>
+</html>

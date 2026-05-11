@@ -1,0 +1,11 @@
+# 临时/调试文件
+test_*.png
+*_debug.png
+*_check.py
+final_check.png
+quick_test.py
+verify_overlap.py
+
+# 系统文件
+Thumbs.db
+Desktop.ini
