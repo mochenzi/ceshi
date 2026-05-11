@@ -1042,9 +1042,10 @@ setTimeout(() => spawnConfetti(40), 800);
       card.style.left = left + 'px';
       card.style.top  = top + 'px';
 
-      // 占位色块 (替换为图片时改为 <img src="img/N.jpg">)
-      const placeholder = document.createElement('div');
-      placeholder.style.cssText = `
+      // 真实图片或灰色占位
+      if (file.placeholder) {
+        const placeholder = document.createElement('div');
+        placeholder.style.cssText = `
         width:100%;height:100%;
         background:linear-gradient(135deg,
           hsl(0,0%,${file.gray}%) 0%,
@@ -1059,23 +1060,33 @@ setTimeout(() => spawnConfetti(40), 800);
       placeholder.innerHTML = '<span style="font-size:' + (w < 130 ? 26 : 36) + 'px;opacity:0.35">📷</span><span style="font-size:12px;margin-top:4px;opacity:0.45;letter-spacing:0.5px">图片' + (i + 1) + '</span>';
       card.appendChild(placeholder);
 
-      // 点击放大
-      card.addEventListener('click', (e) => {
-        e.stopPropagation();
-        if (file.placeholder) {
-          // 占位模式：显示编号
+        card.addEventListener('click', (e) => {
+          e.stopPropagation();
           lightboxImg.src = '';
-          lightboxImg.style.background = `linear-gradient(135deg, hsl(0,0%,${file.gray}%) 0%, hsl(0,0%,${file.gray + 15}%) 100%)`;
-          lightboxImg.style.minWidth = '300px';
+          lightboxImg.style.background = 'linear-gradient(135deg, hsl(0,0%,' + file.gray + '%) 0%, hsl(0,0%,' + (file.gray + 15) + '%) 100%)';
+          lightboxImg.style.minWidth = '340px';
           lightboxImg.style.minHeight = '300px';
-        } else {
+          lightbox.classList.add('active');
+        });
+
+      } else {
+        // 真实图片
+        const img = document.createElement('img');
+        img.src = file.url;
+        img.alt = '';
+        img.loading = 'lazy';
+        img.style.cssText = 'display:block;width:100%;height:100%;object-fit:cover;';
+        card.appendChild(img);
+
+        card.addEventListener('click', (e) => {
+          e.stopPropagation();
           lightboxImg.src = file.url;
           lightboxImg.style.background = '';
           lightboxImg.style.minWidth = '';
           lightboxImg.style.minHeight = '';
-        }
-        lightbox.classList.add('active');
-      });
+          lightbox.classList.add('active');
+        });
+      }
 
       photoStage.appendChild(card);
     });
